@@ -566,7 +566,16 @@ async function saveClient(id, payload) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
-  if (!response.ok) throw new Error("Unable to save client");
+  if (!response.ok) {
+    let errMsg = "Unable to save client";
+    try {
+      const errData = await response.json();
+      if (errData && errData.error) {
+        errMsg = errData.error;
+      }
+    } catch (_) {}
+    throw new Error(errMsg);
+  }
   const updated = await response.json();
   state.clients = state.clients.map((client) => client.id === id ? updated : client);
   return updated;
@@ -590,7 +599,16 @@ async function createClient() {
       tasks: ["Onboard new lead", "Schedule discovery call"]
     })
   });
-  if (!response.ok) throw new Error("Unable to create client");
+  if (!response.ok) {
+    let errMsg = "Unable to create client";
+    try {
+      const errData = await response.json();
+      if (errData && errData.error) {
+        errMsg = errData.error;
+      }
+    } catch (_) {}
+    throw new Error(errMsg);
+  }
   const client = await response.json();
   state.clients.unshift(client);
   state.selectedId = client.id;

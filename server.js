@@ -350,8 +350,6 @@ function cleanClientInput(input, isCreate = false) {
   }
 
   if (isCreate) {
-    cleaned.id = crypto.randomUUID();
-    cleaned.createdAt = new Date().toISOString();
     cleaned.name = String(cleaned.name || "New client").trim();
     cleaned.company = String(cleaned.company || "").trim();
     cleaned.stage = cleaned.stage || "outreach_done";
