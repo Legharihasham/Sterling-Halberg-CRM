@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Sterling Halberg | Executive CRM</title>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/aida-public/AB6AXuBtcK341GBxE3BwuS6tG8G3WQFf2xPNalr8BIgN6xBSdHwGiwk3CmBHtxdJJAHp_HGsJzPCH85TkWtC1CQL1j6-4MCgkGZIzskcYiP8tsAd7ByAL5mLSbQkZDRCKCP0HTiNFFK9MTeteqK-4BY_Gj3Cr26yRoYcBXl9iVaKFwYBDJKcEJjG4e8aI3VrS11xJan13zOCd4Q4J2Ml9Jle1Az5AjKt8iNgVs1hfhdeR9DqQGXJqk0L5qDX_-hzA_PGIKBjG4lt0PDLTelh"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary-container": "#0b1c30",
+            "tertiary-fixed-dim": "#b7c8e1",
+            "surface-container-highest": "#e0e3e5",
+            "surface-bright": "#f7f9fb",
+            "error": "#ba1a1a",
+            "surface-container-lowest": "#ffffff",
+            "outline-variant": "#c6c6cd",
+            "inverse-on-surface": "#eff1f3",
+            "on-error": "#ffffff",
+            "surface-variant": "#e0e3e5",
+            "outline": "#76777d",
+            "on-error-container": "#93000a",
+            "surface-tint": "#565e74",
+            "tertiary-fixed": "#d3e4fe",
+            "tertiary": "#000000",
+            "on-primary-container": "#7c839b",
+            "on-surface-variant": "#45464d",
+            "on-primary-fixed": "#131b2e",
+            "surface-dim": "#d8dadc",
+            "on-surface": "#191c1e",
+            "inverse-primary": "#bec6e0",
+            "background": "#f7f9fb",
+            "on-primary": "#ffffff",
+            "on-tertiary": "#ffffff",
+            "surface": "#f7f9fb",
+            "secondary-fixed-dim": "#6bd8cb",
+            "error-container": "#ffdad6",
+            "on-tertiary-container": "#75859d",
+            "on-secondary-fixed-variant": "#005049",
+            "primary": "#0f172a",
+            "on-primary-fixed-variant": "#3f465c",
+            "on-secondary-fixed": "#00201d",
+            "on-secondary": "#ffffff",
+            "on-secondary-container": "#006f66",
+            "inverse-surface": "#2d3133",
+            "on-background": "#191c1e",
+            "secondary": "#0d9488",
+            "surface-container-high": "#e6e8ea",
+            "surface-container-low": "#f2f4f6",
+            "on-tertiary-fixed-variant": "#38485d",
+            "primary-container": "#131b2e",
+            "secondary-container": "#86f2e4",
+            "primary-fixed-dim": "#bec6e0",
+            "secondary-fixed": "#89f5e7",
+            "surface-container": "#eceef0",
+            "on-tertiary-fixed": "#0b1c30",
+            "primary-fixed": "#dae2fd"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.375rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "md": "0.75rem",
+            "xs": "0.2rem",
+            "margin-mobile": "12px",
+            "sm": "0.375rem",
+            "xl": "1.5rem",
+            "gutter": "16px",
+            "unit": "3px",
+            "margin-desktop": "24px",
+            "lg": "1.0rem",
+            "max-width": "1280px"
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    body { background-color: #F7F9FB; color: #191c1e; font-family: 'Inter', sans-serif; font-size: 13px; }
+    .glass-nav { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    .sidebar-transition { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    
+    /* Make Material Icons uniform, small, and sharp */
+    .material-symbols-outlined { 
+      font-size: 18px !important; 
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle; 
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 20; 
+    }
+    
+    .card-border { border: 1px solid #E2E8F0; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+    .view-pane { transition: opacity 0.1s ease-in-out; }
+    .kanban-column { min-width: 220px; max-width: 260px; }
+  </style>
+</head>
+<body class="font-body-md text-body-md overflow-x-hidden bg-[#F7F9FB] text-[13px]">
+
+  <!-- SideNavBar (Desktop) -->
+  <aside class="fixed left-0 top-0 h-full flex flex-col py-md space-y-sm bg-primary dark:bg-tertiary-container text-on-primary dark:text-on-tertiary-container docked w-56 z-[60] sidebar-transition hidden md:flex">
+    <div class="px-md mb-md mt-sm">
+      <div class="flex items-center gap-xs">
+        <div class="w-8 h-8 bg-on-primary/10 rounded flex items-center justify-center">
+          <span class="material-symbols-outlined text-on-primary">architecture</span>
+        </div>
+        <div>
+          <h1 class="font-bold text-[15px] leading-tight text-on-primary dark:text-on-tertiary-container">Sterling Halberg</h1>
+          <p class="text-[10px] opacity-70">Executive CRM</p>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="flex-1 px-sm space-y-xs">
+      <a id="nav-dashboard" class="flex items-center gap-sm text-on-primary/70 dark:text-on-tertiary-container/70 px-md py-2 rounded transition-colors group text-[13px]" href="#dashboard">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span>Dashboard</span>
+      </a>
+      <a id="nav-pipeline" class="flex items-center gap-sm text-on-primary/70 dark:text-on-tertiary-container/70 px-md py-2 rounded transition-colors group text-[13px]" href="#pipeline">
+        <span class="material-symbols-outlined">view_kanban</span>
+        <span>Pipeline</span>
+      </a>
+      <a id="nav-meetings" class="flex items-center gap-sm text-on-primary/70 dark:text-on-tertiary-container/70 px-md py-2 rounded transition-colors group text-[13px]" href="#meetings">
+        <span class="material-symbols-outlined">calendar_month</span>
+        <span>Meetings</span>
+      </a>
+      <a id="nav-profile" class="flex items-center gap-sm text-on-primary/70 dark:text-on-tertiary-container/70 px-md py-2 rounded transition-colors group text-[13px]" href="#profile">
+        <span class="material-symbols-outlined">group</span>
+        <span>Client Profile</span>
+      </a>
+    </nav>
+    
+    <div class="px-md pb-md">
+      <button id="newClientButton" class="w-full h-[38px] bg-white text-primary font-bold rounded flex items-center justify-center gap-xs hover:bg-opacity-90 transition-all text-[12px]">
+        <span class="material-symbols-outlined">add</span>
+        New Lead
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Shell -->
+  <main class="md:ml-56 min-h-screen flex flex-col">
+    <!-- TopNavBar -->
+    <header class="sticky top-0 z-50 flex justify-between items-center w-full px-margin-desktop py-3 bg-surface/80 dark:bg-surface-container-highest/80 border-b border-outline-variant dark:border-outline backdrop-blur-md glass-nav">
+      <div class="flex items-center gap-md">
+        <h1 id="topbar-title" class="text-[15px] font-bold text-primary dark:text-primary-fixed">Dashboard</h1>
+        
+        <!-- Search bar container -->
+        <div id="search-container" class="relative w-64">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">search</span>
+          <input id="clientSearch" class="w-full bg-surface-container-low border-none rounded pl-9 pr-sm py-1.5 font-medium text-[12px] focus:ring-1 focus:ring-secondary/20 focus:outline-none" placeholder="Search leads..." type="text" autocomplete="off"/>
+          <!-- Dropdown suggestions -->
+          <div id="search-suggestions" class="absolute left-0 right-0 mt-1 bg-white border border-outline-variant rounded shadow-lg max-h-60 overflow-y-auto hidden z-[70] divide-y divide-outline-variant/60">
+            <!-- Dynamic search suggestions -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-md">
+        <!-- Notification Permission & Test Trigger -->
+        <div class="flex items-center gap-xs">
+          <button id="btnToggleNotifications" title="Enable Notifications" class="p-1 text-on-surface-variant hover:bg-surface-container-low transition-colors rounded-full relative flex items-center justify-center">
+            <span class="material-symbols-outlined">notifications</span>
+            <span id="notif-badge" class="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-secondary hidden animate-ping"></span>
+          </button>
+          <button id="btnSendTestPush" title="Send Test Notification" class="px-2 py-0.5 border border-outline-variant rounded font-semibold text-[10px] text-on-surface-variant hover:bg-surface-container-low transition-all hidden">
+            Test Push
+          </button>
+        </div>
+        <a href="#settings" class="p-1 text-on-surface-variant hover:bg-surface-container-low transition-colors rounded-full flex items-center justify-center" title="Integration Settings">
+          <span class="material-symbols-outlined">settings</span>
+        </a>
+        <div class="h-6 w-px bg-outline-variant mx-1"></div>
+        <div class="flex items-center gap-xs cursor-pointer hover:opacity-80 transition-opacity">
+          <img alt="User Profile" class="w-6 h-6 rounded-full border border-outline-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaH9L6hT4qKmqs-lz43P_toaKx16VvYP00QY4vVMCixsByhpEQkBTtETCfVkm6osD2F3V3lW0DJwfr7dUWJTv2Q_Zq10eiJx3PfR_BJ0wt34xZp8w9g3H2T1UzpCs_W_NqgPZtrfLoqQWDakNHImunbL3ljWT_kc8dOBD2WKr7jYkVXEO7c-VEj8e_cEw5q01RuYLEaES15nZ73cZmW8mFJbGLP_cFzCLRCPm9MuiN5Qbb0kFgwS_zesK5pHoKV-8JvZAZwU3bqS9q"/>
+          <span class="font-bold text-[12px] hidden sm:inline">Sterling H.</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- VIEWS CANVAS -->
+    <div class="flex-1 w-full relative">
+
+      <!-- VIEW: EXECUTIVE DASHBOARD -->
+      <div id="view-dashboard" class="view-pane p-margin-desktop space-y-md max-w-max-width mx-auto w-full">
+        <!-- Greeting Section -->
+        <section class="flex flex-col md:flex-row justify-between items-end gap-sm">
+          <div>
+            <p id="dashboard-date" class="text-on-surface-variant text-[11px] font-semibold mb-0.5">Monday, October 23</p>
+            <h2 class="text-[20px] font-bold text-primary leading-tight">Welcome back, Sterling.</h2>
+            <p class="text-on-tertiary-container text-[12px] mt-0.5">Your agency is performing 12% above last month's baseline.</p>
+          </div>
+          <div class="flex gap-xs">
+            <button class="px-md h-[38px] bg-white border border-outline-variant rounded font-semibold text-[12px] flex items-center gap-xs hover:bg-surface-container-low transition-all">
+              <span class="material-symbols-outlined">download</span>
+              Export Report
+            </button>
+            <button id="dashboard-quick-action" class="px-md h-[38px] bg-primary text-on-primary rounded font-semibold text-[12px] flex items-center gap-xs hover:bg-opacity-90 transition-all shadow-sm">
+              <span class="material-symbols-outlined">bolt</span>
+              Quick Action
+            </button>
+          </div>
+        </section>
+
+        <!-- Metrics Bento Grid -->
+        <section class="grid grid-cols-1 md:grid-cols-5 gap-md">
+          <!-- Stat 1: Meetings Done -->
+          <div class="bg-white p-md rounded-xl card-border flex flex-col justify-between hover:border-secondary transition-colors duration-200">
+            <div class="flex justify-between items-start">
+              <span class="material-symbols-outlined text-secondary bg-secondary-container/30 p-1.5 rounded">event_available</span>
+              <span class="text-secondary text-[10px] font-bold bg-secondary-container/20 px-2 py-0.5 rounded-full">Completed</span>
+            </div>
+            <div class="mt-md">
+              <p class="text-on-surface-variant text-[11px] font-medium">Meetings Done</p>
+              <strong id="metricDone" class="text-[22px] font-bold text-primary block leading-none mt-1">0</strong>
+            </div>
+          </div>
+          
+          <!-- Stat 2: Clients Closed -->
+          <div class="bg-white p-md rounded-xl card-border flex flex-col justify-between hover:border-secondary transition-colors duration-200">
+            <div class="flex justify-between items-start">
+              <span class="material-symbols-outlined text-primary bg-primary-fixed p-1.5 rounded">handshake</span>
+              <span class="text-on-surface-variant text-[10px] font-bold">This Month</span>
+            </div>
+            <div class="mt-md">
+              <p class="text-on-surface-variant text-[11px] font-medium">Clients Closed</p>
+              <strong id="metricClosed" class="text-[22px] font-bold text-primary block leading-none mt-1">0</strong>
+            </div>
+          </div>
+
+          <!-- Stat 3: Closed Portfolio (MRR) -->
+          <div class="bg-white p-md rounded-xl card-border flex flex-col justify-between hover:border-secondary transition-colors duration-200">
+            <div class="flex justify-between items-start">
+              <span class="material-symbols-outlined text-secondary bg-secondary-container/30 p-1.5 rounded">payments</span>
+              <span class="text-secondary text-[10px] font-bold bg-secondary-container/20 px-2 py-0.5 rounded-full">Current MRR</span>
+            </div>
+            <div class="mt-md">
+              <p class="text-on-surface-variant text-[11px] font-medium">Closed Portfolio</p>
+              <strong id="metricClosedValue" class="text-[22px] font-bold text-primary block leading-none mt-1">$0</strong>
+            </div>
+          </div>
+
+          <!-- Stat 4: Upcoming Meetings Count -->
+          <div class="bg-white p-md rounded-xl card-border flex flex-col justify-between hover:border-secondary transition-colors duration-200">
+            <div class="flex justify-between items-start">
+              <span class="material-symbols-outlined text-primary bg-primary-fixed p-1.5 rounded">calendar_today</span>
+              <span id="nextMeetingText" class="text-on-surface-variant text-[10px] max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap">No meetings</span>
+            </div>
+            <div class="mt-md">
+              <p class="text-on-surface-variant text-[11px] font-medium">Upcoming Meetings</p>
+              <strong id="metricUpcoming" class="text-[22px] font-bold text-primary block leading-none mt-1">0</strong>
+            </div>
+          </div>
+
+          <!-- Stat 5: Pipeline Value -->
+          <div class="bg-white p-md rounded-xl card-border flex flex-col justify-between group hover:border-primary transition-colors duration-200 relative overflow-hidden">
+            <div class="flex justify-between items-start relative z-10">
+              <div class="bg-tertiary-container text-white p-1.5 rounded">
+                <span class="material-symbols-outlined">payments</span>
+              </div>
+              <div class="text-right">
+                <span class="text-secondary text-[10px] font-bold block">Weighted value</span>
+              </div>
+            </div>
+            <div class="mt-md relative z-10">
+              <p class="text-on-surface-variant text-[11px] font-medium">Pipeline Value</p>
+              <strong id="metricPipeline" class="text-[20px] font-bold text-primary block leading-none mt-1">$0</strong>
+            </div>
+            <!-- Subtle background decoration -->
+            <div class="absolute -right-10 -bottom-10 opacity-5 group-hover:scale-110 transition-transform duration-500">
+              <span class="material-symbols-outlined text-[150px]">trending_up</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Detailed Grid Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-md">
+          <!-- Upcoming Meetings (2/3 width on large) -->
+          <div class="lg:col-span-2 bg-white rounded-xl card-border overflow-hidden flex flex-col">
+            <div class="px-md py-3 border-b border-outline-variant flex justify-between items-center bg-[#fdfdfd]">
+              <h3 class="text-[14px] font-bold text-primary">Upcoming Meetings</h3>
+              <a href="#pipeline" class="text-secondary text-[12px] font-bold hover:underline">View Pipeline</a>
+            </div>
+            <!-- Dynamic Upcoming Meetings List -->
+            <div id="upcoming-meetings-list" class="divide-y divide-outline-variant flex-1 min-h-[180px]">
+              <!-- Generated Dynamically -->
+            </div>
+          </div>
+
+          <!-- Live Activity/Widget (1/3 width) -->
+          <div class="bg-white rounded-xl card-border p-md flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-md">
+                <h3 class="text-[14px] font-bold text-primary">Focus & Status</h3>
+                <span class="flex h-1.5 w-1.5 rounded-full bg-secondary animate-pulse"></span>
+              </div>
+              
+              <!-- Focus Panel contents -->
+              <div class="p-sm bg-surface-container-low rounded border border-dashed border-outline text-center mb-md">
+                <p class="text-[10px] text-on-surface-variant mb-1 font-bold uppercase tracking-wider">Today's Focus</p>
+                <p id="focusStage" class="text-[13px] text-primary font-bold">Pipeline health</p>
+                <p id="focusCopy" class="text-[11px] text-on-surface-variant mt-1 leading-relaxed">Keep movement clear: outreach, interest, meeting, close.</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-[10px] text-on-surface-variant mb-2 uppercase tracking-wider font-bold">Quick Guidelines</h4>
+              <ul class="space-y-1.5 text-[11px] text-on-surface-variant font-medium">
+                <li class="flex items-start gap-xs">
+                  <span class="material-symbols-outlined text-secondary text-[14px]">check_circle</span>
+                  <span>Drag cards to advance sales steps.</span>
+                </li>
+                <li class="flex items-start gap-xs">
+                  <span class="material-symbols-outlined text-secondary text-[14px]">check_circle</span>
+                  <span>Click cards to view and edit details.</span>
+                </li>
+                <li class="flex items-start gap-xs">
+                  <span class="material-symbols-outlined text-secondary text-[14px]">check_circle</span>
+                  <span>Keep retainer and dates up-to-date.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- VIEW: SALES PIPELINE -->
+      <div id="view-pipeline" class="view-pane flex-grow overflow-x-auto bg-surface px-margin-desktop py-md hidden">
+        <div class="section-heading mb-md flex flex-col md:flex-row justify-between items-start md:items-end gap-sm">
+          <div>
+            <p class="text-on-surface-variant text-[11px] font-semibold">Deal Flow</p>
+            <h2 class="text-[18px] font-bold text-primary">Simple Pipeline</h2>
+          </div>
+          
+          <!-- View Service Filters -->
+          <div class="view-filter flex gap-xs flex-wrap" role="group" aria-label="Service filter">
+            <button class="filter active px-md py-1 bg-white border border-outline-variant text-on-surface-variant hover:bg-secondary hover:text-white rounded text-[11px] font-semibold" type="button" data-service="all">All</button>
+            <button class="filter px-md py-1 bg-white border border-outline-variant text-on-surface-variant hover:bg-secondary hover:text-white rounded text-[11px] font-semibold" type="button" data-service="Real Estate VA">VA</button>
+            <button class="filter px-md py-1 bg-white border border-outline-variant text-on-surface-variant hover:bg-secondary hover:text-white rounded text-[11px] font-semibold" type="button" data-service="Designing">Design</button>
+            <button class="filter px-md py-1 bg-white border border-outline-variant text-on-surface-variant hover:bg-secondary hover:text-white rounded text-[11px] font-semibold" type="button" data-service="Website Development">Web</button>
+            <button class="filter px-md py-1 bg-white border border-outline-variant text-on-surface-variant hover:bg-secondary hover:text-white rounded text-[11px] font-semibold" type="button" data-service="Social Media">Social</button>
+          </div>
+        </div>
+
+        <!-- Kanban Board Container -->
+        <div class="pipeline-board flex gap-md overflow-x-auto pb-md min-h-[500px] h-full" id="pipelineBoard">
+          <!-- Dynamic Columns -->
+        </div>
+      </div>
+
+      <!-- VIEW: MEETINGS SCHEDULE -->
+      <div id="view-meetings" class="view-pane max-w-[1440px] mx-auto px-margin-desktop py-md hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-md">
+          
+          <!-- Left Column: Schedule Form (col-span-5) -->
+          <div class="lg:col-span-5">
+            <div class="bg-white border border-outline-variant rounded-xl p-md flex flex-col gap-sm">
+              <div class="flex justify-between items-center mb-xs">
+                <h3 class="text-[14px] font-bold text-primary flex items-center gap-xs">
+                  <span class="material-symbols-outlined text-secondary">add_circle</span>
+                  Schedule New Meeting
+                </h3>
+              </div>
+              
+              <form id="schedule-meeting-form" class="space-y-md">
+                <!-- Client Autocomplete Search -->
+                <div class="relative">
+                  <label for="meetingClientSearch" class="text-[10px] text-on-surface-variant uppercase font-bold block mb-1">Select Client</label>
+                  <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]">person</span>
+                    <input id="meetingClientSearch" class="w-full bg-surface-container-low border-none rounded pl-9 pr-sm py-2 font-medium text-[12px] focus:ring-1 focus:ring-secondary/20 focus:outline-none" placeholder="Type client name..." type="text" autocomplete="off"/>
+                  </div>
+                  <input type="hidden" id="meetingClientId" name="clientId" />
+                  
+                  <!-- Suggestions list -->
+                  <div id="meetingClientSuggestions" class="absolute left-0 right-0 mt-1 bg-white border border-outline-variant rounded shadow-lg max-h-48 overflow-y-auto hidden z-[70] divide-y divide-outline-variant/60">
+                    <!-- Dynamic client suggestions -->
+                  </div>
+                </div>
+
+                <!-- Date and Time Picker -->
+                <div>
+                  <label for="meetingDateTime" class="text-[10px] text-on-surface-variant uppercase font-bold block mb-1">Date & Time (Pakistan Time)</label>
+                  <input id="meetingDateTime" name="meetingDateTime" type="datetime-local" class="w-full text-[12px] text-primary bg-surface-container-low border-none rounded p-2 focus:ring-1 focus:ring-secondary/20 focus:outline-none" required />
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="btnScheduleMeeting" class="w-full h-[38px] bg-primary text-on-primary font-bold rounded flex items-center justify-center gap-xs hover:opacity-90 transition-all text-[12px] shadow-sm">
+                  <span class="material-symbols-outlined">calendar_today</span>
+                  Schedule Meeting
+                </button>
+                <p id="scheduleStatus" class="text-[11px] font-bold text-secondary text-center mt-1"></p>
+              </form>
+            </div>
+          </div>
+
+          <!-- Right Column: Scheduled Meetings List (col-span-7) -->
+          <div class="lg:col-span-7">
+            <div class="bg-white border border-outline-variant rounded-xl overflow-hidden flex flex-col">
+              <div class="px-md py-3 border-b border-outline-variant flex justify-between items-center bg-[#fdfdfd]">
+                <h3 class="text-[14px] font-bold text-primary flex items-center gap-xs">
+                  <span class="material-symbols-outlined text-secondary">calendar_month</span>
+                  Active Schedule
+                </h3>
+                <span id="meetings-count" class="px-1.5 py-0.5 rounded-full bg-surface-container-high text-on-surface font-bold text-[10px]">0 scheduled</span>
+              </div>
+              
+              <!-- Meetings List Container -->
+              <div id="scheduled-meetings-list" class="divide-y divide-outline-variant max-h-[600px] overflow-y-auto min-h-[200px]">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- VIEW: CLIENT PROFILE DETAILS -->
+      <div id="view-profile" class="view-pane max-w-[1440px] mx-auto px-margin-desktop py-md hidden">
+        
+        <!-- Profile Empty Placeholder State -->
+        <div id="profileEmpty" class="min-h-[400px] flex flex-col items-center justify-center text-center gap-xs">
+          <span class="material-symbols-outlined text-[48px] text-outline-variant">person_search</span>
+          <h3 class="text-[16px] font-bold text-primary">Select a client</h3>
+          <p class="text-on-surface-variant text-[12px] max-w-[320px]">Click any pipeline card to see full payment details, meeting history, notes, and next actions.</p>
+          <a href="#pipeline" class="mt-md px-md py-1.5 bg-primary text-on-primary font-bold rounded hover:opacity-90 transition-all text-[12px]">Go to Pipeline</a>
+        </div>
+
+        <!-- Dynamic Profile Form -->
+        <form class="profile-form hidden space-y-md" id="profileForm">
+          <!-- Back button / header action -->
+          <div class="flex items-center justify-between mb-xs">
+            <a class="p-1 hover:bg-surface-container-low rounded transition-colors group flex items-center gap-xs text-on-surface-variant" href="#pipeline">
+              <span class="material-symbols-outlined">arrow_back</span>
+              <span class="text-[12px] group-hover:text-primary font-semibold">Back to Pipeline</span>
+            </a>
+          </div>
+
+          <!-- Hero Section: Client Summary Card -->
+          <section class="bg-white border border-outline-variant rounded-xl p-md flex flex-col md:flex-row justify-between items-start md:items-end gap-md">
+            <div class="flex flex-col md:flex-row gap-md items-start md:items-center w-full md:w-auto">
+              <div class="w-16 h-16 rounded bg-surface-container flex items-center justify-center overflow-hidden border border-outline-variant">
+                <img alt="Company Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtcK341GBxE3BwuS6tG8G3WQFf2xPNalr8BIgN6xBSdHwGiwk3CmBHtxdJJAHp_HGsJzPCH85TkWtC1CQL1j6-4MCgkGZIzskcYiP8tsAd7ByAL5mLSbQkZDRCKCP0HTiNFFK9MTeteqK-4BY_Gj3Cr26yRoYcBXl9iVaKFwYBDJKcEJjG4e8aI3VrS11xJan13zOCd4Q4J2Ml9Jle1Az5AjKt8iNgVs1hfhdeR9DqQGXJqk0L5qDX_-hzA_PGIKBjG4lt0PDLTelh"/>
+              </div>
+              <div class="flex-grow w-full md:w-auto min-w-0">
+                <input id="name" name="name" type="text" class="w-full text-[18px] font-bold text-primary bg-transparent border-b border-dashed border-outline-variant focus:ring-0 focus:outline-none pb-0.5" placeholder="Client Name">
+                <div class="flex items-center gap-sm mt-1 flex-wrap">
+                  <input id="company" name="company" type="text" class="text-[12px] text-on-surface-variant bg-transparent border-b border-dashed border-outline-variant focus:ring-0 focus:outline-none py-0.5" placeholder="Company Name">
+                  <span class="w-1 h-1 rounded-full bg-outline-variant hidden md:inline"></span>
+                  <div class="flex items-center gap-xs bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full text-[10px]">
+                    <span class="material-symbols-outlined text-[12px]">near_me</span>
+                    <span id="profilePriority" class="font-bold uppercase tracking-wider">Warm</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-xs w-full md:w-auto mt-sm md:mt-0">
+              <div class="text-right hidden md:block">
+                <p class="text-[10px] font-bold text-on-surface-variant mb-0.5 uppercase">Pipeline Stage</p>
+                <div id="profileStageBadge" class="bg-primary text-on-primary px-md py-1 rounded font-bold text-[12px]">
+                  Outreach Done
+                </div>
+              </div>
+              <div class="flex gap-xs w-full md:w-auto mt-1">
+                <button id="saveClientButton" type="submit" class="flex-1 md:flex-initial px-md h-[38px] bg-primary text-on-primary rounded font-bold flex items-center justify-center gap-xs hover:opacity-90 transition-all text-[12px] shadow-sm">
+                  <span class="material-symbols-outlined">save</span>
+                  Save Profile
+                </button>
+                <button id="advanceStageButton" type="button" class="flex-1 md:flex-initial px-md h-[38px] bg-white border border-outline-variant rounded font-bold flex items-center justify-center gap-xs hover:bg-surface-container-low transition-all text-[12px]">
+                  <span class="material-symbols-outlined">bolt</span>
+                  Advance
+                </button>
+              </div>
+              <div class="text-right w-full mt-0.5">
+                <span id="saveStatus" class="text-[11px] font-bold text-secondary"></span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Profile Bento Grid details -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-md">
+            <!-- Left Column: Financials & Contact (col-span-4) -->
+            <div class="lg:col-span-4 space-y-md">
+              <!-- Financials Card -->
+              <div class="bg-white border border-outline-variant rounded-xl p-md flex flex-col gap-sm">
+                <div class="flex justify-between items-center">
+                  <h3 class="text-[14px] font-bold text-primary">Financials</h3>
+                  <span class="material-symbols-outlined text-on-surface-variant">payments</span>
+                </div>
+                <div class="space-y-sm">
+                  <div>
+                    <p class="text-[10px] text-on-surface-variant uppercase font-bold">Monthly Retainer</p>
+                    <div class="flex items-center gap-xs mt-0.5">
+                      <span class="text-[18px] font-bold text-primary">$</span>
+                      <input id="monthlyValue" name="monthlyValue" type="number" class="w-full text-[18px] font-bold text-primary bg-transparent border-b border-dashed border-outline-variant focus:ring-0 focus:outline-none p-0">
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-sm pt-sm border-t border-outline-variant/60">
+                    <div>
+                      <label for="setupFee" class="text-[10px] text-on-surface-variant uppercase font-bold block">Setup Fee</label>
+                      <div class="flex items-center gap-xs mt-0.5">
+                        <span class="text-[12px] text-primary">$</span>
+                        <input id="setupFee" name="setupFee" type="number" class="w-full text-[12px] text-primary bg-transparent border-b border-dashed border-outline-variant focus:ring-0 focus:outline-none p-0">
+                      </div>
+                    </div>
+                    <div>
+                      <label for="contractMonths" class="text-[10px] text-on-surface-variant uppercase font-bold block">Months</label>
+                      <input id="contractMonths" name="contractMonths" type="number" class="w-full text-[12px] text-primary bg-transparent border-b border-dashed border-outline-variant focus:ring-0 focus:outline-none p-0 mt-0.5">
+                    </div>
+                  </div>
+                  <div class="pt-sm border-t border-outline-variant/60">
+                    <p class="text-[10px] text-on-surface-variant uppercase font-bold">Contract Value</p>
+                    <p id="profileTotal" class="text-[14px] font-bold text-secondary mt-0.5">$0</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contact Info Card -->
+              <div class="bg-white border border-outline-variant rounded-xl p-md">
+                <h3 class="text-[14px] font-bold text-primary mb-md">Contact Info</h3>
+                <div class="space-y-sm">
+                  <div class="flex items-center gap-sm">
+                    <div class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-primary">mail</span>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                      <p class="text-[9px] text-on-surface-variant uppercase font-bold mb-0.5">Email Address</p>
+                      <input id="email" name="email" type="email" class="text-[12px] font-medium bg-transparent border-b border-dashed border-outline-variant focus:ring-0 w-full focus:outline-none p-0" placeholder="No email">
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-sm">
+                    <div class="w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-primary">call</span>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                      <p class="text-[9px] text-on-surface-variant uppercase font-bold mb-0.5">Phone Number</p>
+                      <input id="phone" name="phone" type="tel" class="text-[12px] font-medium bg-transparent border-b border-dashed border-outline-variant focus:ring-0 w-full focus:outline-none p-0" placeholder="No phone">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Services, Stage, Notes, Tasks (col-span-8) -->
+            <div class="lg:col-span-8 space-y-md">
+              <!-- Services & Details Card -->
+              <div class="bg-white border border-outline-variant rounded-xl p-md">
+                <h3 class="text-[14px] font-bold text-primary mb-md">Service & Status details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+                  <div class="space-y-sm">
+                    <div>
+                      <label for="service" class="text-[10px] text-on-surface-variant uppercase font-bold block mb-0.5">Service Type</label>
+                      <select id="service" name="service" class="w-full text-[12px] text-primary bg-transparent border-b border-dashed border-outline-variant focus:ring-0 focus:outline-none p-0 mt-0.5">
+                        <option value="Real Estate VA">Real Estate VA</option>
+                        <option value="Designing">Designing</option>
+                        <option value="Website Development">Website Development</option>
+                        <option value="Social Media">Social Media</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="stage" class="text-[10px] text-on-surface-variant uppercase font-bold block mb-0.5">Active Stage</label>
+                      <select id="stage" name="stage" class="w-full text-[12px] text-primary bg-transparent border-b border-dashed border-outline-variant focus:ring-0 focus:outline-none p-0 mt-0.5">
+                        <!-- Populated Dynamically -->
+                      </select>
+                    </div>
+                  </div>
+                  <div class="space-y-sm">
+                    <div class="grid grid-cols-2 gap-xs">
+                      <div>
+                        <label for="priority" class="text-[10px] text-on-surface-variant uppercase font-bold block mb-0.5">Priority</label>
+                        <select id="priority" name="priority" class="w-full text-[12px] text-primary bg-transparent border-b border-dashed border-outline-variant focus:ring-0 focus:outline-none p-0 mt-0.5">
+                          <option value="New">New</option>
+                          <option value="Warm">Warm</option>
+                          <option value="Hot">Hot</option>
+                          <option value="Closed">Closed</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label for="probability" class="text-[10px] text-on-surface-variant uppercase font-bold block mb-0.5">Prob. (%)</label>
+                        <input id="probability" name="probability" type="number" min="0" max="100" class="w-full text-[12px] text-primary bg-transparent border-b border-dashed border-outline-variant focus:ring-0 focus:outline-none p-0 mt-0.5">
+                      </div>
+                    </div>
+                    <div>
+                      <label for="nextMeeting" class="text-[10px] text-on-surface-variant uppercase font-bold block mb-0.5">Next Meeting Date</label>
+                      <input id="nextMeeting" name="nextMeeting" type="datetime-local" class="w-full text-[12px] text-primary bg-transparent border-b border-dashed border-outline-variant focus:ring-0 focus:outline-none p-0 mt-0.5">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Notes Timeline Card -->
+              <div class="bg-white border border-outline-variant rounded-xl p-md space-y-md">
+                <div class="flex justify-between items-center">
+                  <h3 class="text-[14px] font-bold text-primary">Client Notes</h3>
+                  <span class="material-symbols-outlined">edit_note</span>
+                </div>
+                <textarea id="notes" name="notes" rows="3" class="w-full p-sm border border-outline-variant rounded focus:ring-1 focus:ring-secondary focus:outline-none text-[12px]" placeholder="Notes, interaction details, background story..."></textarea>
+                
+                <!-- Timeline feed -->
+                <div class="border-t border-outline-variant/60 pt-md">
+                  <h4 class="text-[10px] text-on-surface-variant uppercase font-bold mb-md tracking-wider">Dynamic History Timeline</h4>
+                  <div id="notes-timeline" class="space-y-md relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-outline-variant max-h-[160px] overflow-y-auto pr-sm">
+                    <!-- Timeline items generated dynamically -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tasks Card -->
+              <div class="bg-white border border-outline-variant rounded-xl p-md flex flex-col gap-sm">
+                <h3 class="text-[14px] font-bold text-primary">Tasks & Next Actions</h3>
+                <textarea id="tasks" name="tasks" rows="3" class="w-full p-sm border border-outline-variant rounded focus:ring-1 focus:ring-secondary focus:outline-none font-mono text-[12px]" placeholder="List tasks (one per line)..."></textarea>
+              </div>
+
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- VIEW: SETTINGS -->
+      <div id="view-settings" class="view-pane max-w-[800px] mx-auto px-margin-desktop py-md hidden">
+        <div class="bg-white border border-outline-variant rounded-xl p-md flex flex-col gap-md">
+          <div>
+            <h2 class="text-[18px] font-bold text-primary">Integration Settings</h2>
+            <p class="text-on-surface-variant text-[12px] mt-0.5">Configure system settings and notifications.</p>
+          </div>
+          
+          <!-- Push Notifications Card -->
+          <div class="border-t border-outline-variant/60 pt-md">
+            <h3 class="text-[14px] font-bold text-primary mb-xs">Web Browser Push Notifications</h3>
+            <p class="text-[11px] text-on-surface-variant mb-md">Receive reminders on this desktop or mobile browser.</p>
+            <div class="flex items-center gap-sm">
+              <button id="settingsBtnToggleNotifications" class="px-md h-[38px] bg-primary text-on-primary rounded font-bold text-[12px] flex items-center gap-xs hover:opacity-90 transition-all shadow-sm">
+                <span class="material-symbols-outlined">notifications</span>
+                <span id="settingsNotifText">Enable Notifications</span>
+              </button>
+              <button id="settingsBtnSendTestPush" class="px-md h-[38px] bg-white border border-outline-variant rounded font-bold text-[12px] hover:bg-surface-container-low transition-all hidden">
+                Send Test Push
+              </button>
+            </div>
+          </div>
+
+          <!-- WhatsApp Integration Card -->
+          <div class="border-t border-outline-variant/60 pt-md">
+            <h3 class="text-[14px] font-bold text-primary mb-xs flex items-center gap-xs">
+              <span class="material-symbols-outlined text-[#25D366]">chat</span>
+              WhatsApp API Gateway (OpenWA)
+            </h3>
+            <p class="text-[11px] text-on-surface-variant mb-md">Send automated reminders directly to your WhatsApp when meetings are 30 minutes away.</p>
+            
+            <form id="whatsapp-settings-form" class="space-y-md">
+              <div class="flex items-center gap-sm">
+                <input type="checkbox" id="waEnabled" name="enabled" class="rounded border-outline-variant text-[#25D366] focus:ring-[#25D366]/20"/>
+                <label for="waEnabled" class="text-[12px] font-bold text-primary cursor-pointer select-none">Enable WhatsApp Notifications</label>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+                <div>
+                  <label for="waApiUrl" class="text-[10px] text-on-surface-variant uppercase font-bold block mb-1">OpenWA API URL</label>
+                  <input id="waApiUrl" name="apiUrl" type="url" placeholder="http://localhost:2785/api" class="w-full text-[12px] text-primary bg-surface-container-low border-none rounded p-2 focus:ring-1 focus:ring-secondary/20 focus:outline-none"/>
+                </div>
+                <div>
+                  <label for="waSessionId" class="text-[10px] text-on-surface-variant uppercase font-bold block mb-1">Session ID</label>
+                  <input id="waSessionId" name="sessionId" type="text" placeholder="default" class="w-full text-[12px] text-primary bg-surface-container-low border-none rounded p-2 focus:ring-1 focus:ring-secondary/20 focus:outline-none"/>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-sm">
+                <div>
+                  <label for="waApiKey" class="text-[10px] text-on-surface-variant uppercase font-bold block mb-1">API Key (X-API-Key)</label>
+                  <input id="waApiKey" name="apiKey" type="password" placeholder="Leave empty if not required" class="w-full text-[12px] text-primary bg-surface-container-low border-none rounded p-2 focus:ring-1 focus:ring-secondary/20 focus:outline-none"/>
+                </div>
+                <div>
+                  <label for="waRecipientPhone" class="text-[10px] text-on-surface-variant uppercase font-bold block mb-1">Recipient WhatsApp Phone Number</label>
+                  <input id="waRecipientPhone" name="recipientPhone" type="tel" placeholder="e.g. 14155550100" class="w-full text-[12px] text-primary bg-surface-container-low border-none rounded p-2 focus:ring-1 focus:ring-secondary/20 focus:outline-none"/>
+                  <span class="text-[9px] text-on-surface-variant mt-0.5 block">Include country code, digits only, no spaces or special characters (e.g. + or -).</span>
+                </div>
+              </div>
+
+              <div class="flex gap-xs pt-sm">
+                <button type="submit" id="btnSaveWaSettings" class="px-md h-[38px] bg-primary text-on-primary font-bold rounded flex items-center justify-center gap-xs hover:opacity-90 transition-all text-[12px] shadow-sm">
+                  <span class="material-symbols-outlined">save</span>
+                  Save Settings
+                </button>
+                <button type="button" id="btnTestWaMessage" class="px-md h-[38px] bg-white border border-outline-variant rounded font-bold flex items-center justify-center gap-xs hover:bg-surface-container-low transition-all text-[12px]">
+                  <span class="material-symbols-outlined">send</span>
+                  Send Test WhatsApp
+                </button>
+              </div>
+              <p id="waSettingsStatus" class="text-[11px] font-bold text-secondary mt-1"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-outline-variant flex md:hidden justify-around items-center h-12 z-[60] px-md">
+      <a id="mobile-nav-dashboard" class="flex flex-col items-center gap-xs text-on-surface-variant" href="#dashboard">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span class="text-[9px]">Home</span>
+      </a>
+      <a id="mobile-nav-pipeline" class="flex flex-col items-center gap-xs text-on-surface-variant" href="#pipeline">
+        <span class="material-symbols-outlined">view_kanban</span>
+        <span class="text-[9px]">Pipeline</span>
+      </a>
+      <a id="mobile-nav-meetings" class="flex flex-col items-center gap-xs text-on-surface-variant" href="#meetings">
+        <span class="material-symbols-outlined">calendar_month</span>
+        <span class="text-[9px]">Meetings</span>
+      </a>
+      <a id="mobile-nav-profile" class="flex flex-col items-center gap-xs text-on-surface-variant" href="#profile">
+        <span class="material-symbols-outlined">group</span>
+        <span class="text-[9px]">Client</span>
+      </a>
+    </nav>
+  </main>
+
+  <script src="/app.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18",
+        "react-dom": "https://esm.sh/react-dom@18/client",
+        "react/jsx-runtime": "https://esm.sh/react@18/jsx-runtime"
+      }
+    }
+  </script>
+  <script type="module">
+    import React from "react";
+    import ReactDOM from "react-dom";
+    import { Agentation } from "/agentation.mjs";
+
+    // Setup Agentation container
+    const container = document.createElement("div");
+    container.id = "agentation-root";
+    document.body.appendChild(container);
+
+    const root = ReactDOM.createRoot(container);
+    root.render(React.createElement(Agentation, {
+      endpoint: "http://localhost:4747"
+    }));
+  </script>
+</body>
+</html>

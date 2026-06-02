@@ -1,0 +1,16 @@
+{
+  "name": "Sterling Halberg CRM",
+  "short_name": "SH CRM",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F9FB",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "https://lh3.googleusercontent.com/aida-public/AB6AXuBtcK341GBxE3BwuS6tG8G3WQFf2xPNalr8BIgN6xBSdHwGiwk3CmBHtxdJJAHp_HGsJzPCH85TkWtC1CQL1j6-4MCgkGZIzskcYiP8tsAd7ByAL5mLSbQkZDRCKCP0HTiNFFK9MTeteqK-4BY_Gj3Cr26yRoYcBXl9iVaKFwYBDJKcEJjG4e8aI3VrS11xJan13zOCd4Q4J2Ml9Jle1Az5AjKt8iNgVs1hfhdeR9DqQGXJqk0L5qDX_-hzA_PGIKBjG4lt0PDLTelh",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
