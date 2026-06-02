@@ -506,8 +506,26 @@ function escapeHtml(value) {
 }
 
 async function loadClients() {
-  const response = await fetch("/api/clients");
-  state.clients = await response.json();
+  try {
+    const response = await fetch("/api/clients");
+    if (!response.ok) {
+      let errMsg = "Failed to load clients";
+      try {
+        const errData = await response.json();
+        if (errData && errData.error) {
+          errMsg = errData.error;
+        }
+      } catch (_) {}
+      throw new Error(errMsg);
+    }
+    state.clients = await response.json();
+  } catch (err) {
+    console.error("Error loading clients:", err);
+    state.clients = [];
+    if (els.saveStatus) {
+      els.saveStatus.textContent = `Error loading leads: ${err.message}`;
+    }
+  }
   
   // Set selected client if not set
   const hash = window.location.hash || "#dashboard";
