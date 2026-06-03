@@ -427,6 +427,9 @@ function cleanClientInput(input, isCreate = false) {
 
 async function handleApi(req, res, url) {
   if (req.method === "GET" && url.pathname === "/api/status") {
+    // Check meetings asynchronously in background on user visit
+    checkUpcomingMeetings().catch(err => console.error("Background cron error:", err));
+
     return sendJson(res, 200, {
       supabaseConfigured: !!(supabaseUrl && supabaseKey && isUrlValid),
       supabaseUrlValid: !!isUrlValid,
@@ -558,6 +561,9 @@ async function handleApi(req, res, url) {
   const parts = url.pathname.split("/").filter(Boolean);
 
   if (req.method === "GET" && url.pathname === "/api/clients") {
+    // Check meetings asynchronously in background on clients load
+    checkUpcomingMeetings().catch(err => console.error("Background cron error:", err));
+
     const clients = await readClients();
     return sendJson(res, 200, clients);
   }
