@@ -435,6 +435,16 @@ async function handleApi(req, res, url) {
     });
   }
 
+  if (req.method === "GET" && url.pathname === "/api/cron/check-meetings") {
+    try {
+      await checkUpcomingMeetings();
+      return sendJson(res, 200, { success: true });
+    } catch (err) {
+      console.error("Cron check failed:", err);
+      return sendJson(res, 500, { error: err.message });
+    }
+  }
+
   if (req.method === "GET" && url.pathname === "/api/vapid-public-key") {
     return sendJson(res, 200, { publicKey: vapidKeys.publicKey });
   }
@@ -671,15 +681,22 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-(async () => {
-  try {
-    await initVapid();
-    startMeetingScheduler();
-    server.listen(PORT, () => {
-      console.log(`Sterling Halberg CRM running at http://localhost:${PORT}`);
-    });
-  } catch (err) {
-    console.error("Failed to initialize VAPID/Scheduler:", err);
-    process.exit(1);
-  }
-})();
+if (!process.env.VERCEL) {
+  (async () => {
+    try {
+      await initVapid();
+      startMeetingScheduler();
+      server.listen(PORT, () => {
+        console.log(`Sterling Halberg CRM running at http://localhost:${PORT}`);
+      });
+    } catch (err) {
+      console.error("Failed to initialize VAPID/Scheduler:", err);
+      process.exit(1);
+    }
+  })();
+} else {
+  // Running on Vercel: run VAPID initialization once
+  initVapid().catch(err => console.error("Vercel VAPID init error:", err));
+}
+
+module.exports = server;
