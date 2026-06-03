@@ -889,6 +889,7 @@ els.newClientButton.addEventListener("click", async () => {
     els.saveStatus.textContent = "New client ready";
   } catch (error) {
     els.saveStatus.textContent = error.message;
+    alert(`Failed to create lead: ${error.message}`);
   }
 });
 
@@ -902,6 +903,7 @@ if (quickActionBtn) {
       if (els.saveStatus) els.saveStatus.textContent = "New client ready";
     } catch (error) {
       if (els.saveStatus) els.saveStatus.textContent = error.message;
+      alert(`Failed to create lead: ${error.message}`);
     }
   });
 }
@@ -1412,10 +1414,56 @@ function initWaSettings() {
   setTimeout(syncSettingsPushUI, 1000);
 }
 
+async function checkDbStatus() {
+  try {
+    const res = await fetch("/api/status");
+    if (!res.ok) return;
+    const status = await res.json();
+    const banner = document.querySelector("#db-warning-banner");
+    if (!banner) return;
+
+    if (!status.supabaseConfigured) {
+      banner.className = "bg-amber-50 dark:bg-amber-950/20 border-b border-amber-200 dark:border-amber-900/40 p-md flex items-start gap-md text-amber-900 dark:text-amber-200";
+      
+      let errorDetailHtml = "";
+      if (status.error) {
+        errorDetailHtml = `
+          <p class="text-[11px] font-mono mt-1 bg-amber-100/50 dark:bg-amber-950/50 p-sm rounded border border-amber-200/50 max-w-xl">
+            <strong>Diagnostic error:</strong> ${escapeHtml(status.error)}
+          </p>
+        `;
+      }
+      
+      banner.innerHTML = `
+        <span class="material-symbols-outlined text-amber-500 dark:text-amber-400 shrink-0 mt-0.5">warning</span>
+        <div class="flex-grow">
+          <h4 class="font-bold text-[13px] text-amber-950 dark:text-amber-100">Database Connection Required</h4>
+          <p class="text-[12px] mt-0.5 leading-relaxed">
+            The CRM database is currently running in fallback/read-only mode because Supabase is not configured. 
+            Leads cannot be added or modified. To fix this, please define 
+            <code class="px-1 py-0.5 rounded bg-amber-100/60 font-mono text-[11px]">SUPABASE_URL</code> and 
+            <code class="px-1 py-0.5 rounded bg-amber-100/60 font-mono text-[11px]">SUPABASE_KEY</code> in your environment variables.
+          </p>
+          ${errorDetailHtml}
+          <div class="mt-sm flex gap-md text-[11px] font-bold">
+            <span class="text-amber-800 dark:text-amber-300">Target URL must be e.g. <code class="font-mono bg-amber-100/30 px-1 py-0.5 rounded">https://yourproject.supabase.co</code></span>
+          </div>
+        </div>
+      `;
+    } else {
+      banner.className = "hidden";
+      banner.innerHTML = "";
+    }
+  } catch (err) {
+    console.error("Failed to check DB status:", err);
+  }
+}
+
 window.addEventListener("hashchange", handleRoute);
 
 // Bootstrap
 populateStageSelect();
+checkDbStatus();
 loadClients();
 updateDashboardDate();
 initMeetingsView();

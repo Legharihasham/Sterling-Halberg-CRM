@@ -12,17 +12,53 @@ const DATA_FILE = path.join(ROOT, "data", "clients.json");
 
 const sseClients = new Set();
 
+// Load environment variables from .env file if it exists (for local development)
+const fsSync = require("fs");
+try {
+  const envPath = path.join(ROOT, ".env");
+  if (fsSync.existsSync(envPath)) {
+    const envContent = fsSync.readFileSync(envPath, "utf8");
+    envContent.split(/\r?\n/).forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) return;
+      const eqIdx = trimmed.indexOf("=");
+      if (eqIdx === -1) return;
+      const key = trimmed.slice(0, eqIdx).trim();
+      let val = trimmed.slice(eqIdx + 1).trim();
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      process.env[key] = val;
+    });
+  }
+} catch (err) {
+  console.warn("Could not load local .env file:", err.message);
+}
+
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
+const isUrlValid = supabaseUrl && (supabaseUrl.startsWith("http://") || supabaseUrl.startsWith("https://"));
 
 if (!supabaseUrl || !supabaseKey) {
   console.warn("WARNING: SUPABASE_URL or SUPABASE_KEY environment variables are missing! Database operations will fail.");
+} else if (!isUrlValid) {
+  console.error("FATAL ERROR: SUPABASE_URL must be a valid URL starting with http:// or https:// (e.g. https://your-project.supabase.co). Found a key/token instead: " + supabaseUrl);
 }
 
-const supabase = createClient(supabaseUrl || "https://placeholder.supabase.co", supabaseKey || "placeholder");
+const supabase = createClient(
+  isUrlValid ? supabaseUrl : "https://placeholder.supabase.co",
+  supabaseKey || "placeholder"
+);
+
+function checkSupabaseConfig() {
+  if (!supabaseUrl || !supabaseKey || !isUrlValid) {
+    throw new Error("Supabase database is not configured. Please set a valid SUPABASE_URL (e.g. https://your-project.supabase.co) and SUPABASE_KEY in your environment.");
+  }
+}
 
 async function readSettings() {
   try {
+    checkSupabaseConfig();
     const { data, error } = await supabase
       .from("settings")
       .select("*")
@@ -43,6 +79,7 @@ async function readSettings() {
 }
 
 async function writeSettings(settings) {
+  checkSupabaseConfig();
   const { error } = await supabase
     .from("settings")
     .upsert({ id: "default", ...settings });
@@ -116,21 +153,26 @@ let vapidKeys = null;
 
 async function initVapid() {
   try {
-    const settings = await readSettings();
-    if (settings.vapidPublicKey && settings.vapidPrivateKey) {
-      vapidKeys = {
-        publicKey: settings.vapidPublicKey,
-        privateKey: settings.vapidPrivateKey
-      };
-    } else {
+    if (!supabaseUrl || !supabaseKey || !isUrlValid) {
+      console.warn("Supabase not configured. Using local/in-memory VAPID keys.");
       vapidKeys = webpush.generateVAPIDKeys();
-      await supabase
-        .from("settings")
-        .upsert({
-          id: "default",
-          vapidPublicKey: vapidKeys.publicKey,
-          vapidPrivateKey: vapidKeys.privateKey
-        });
+    } else {
+      const settings = await readSettings();
+      if (settings.vapidPublicKey && settings.vapidPrivateKey) {
+        vapidKeys = {
+          publicKey: settings.vapidPublicKey,
+          privateKey: settings.vapidPrivateKey
+        };
+      } else {
+        vapidKeys = webpush.generateVAPIDKeys();
+        await supabase
+          .from("settings")
+          .upsert({
+            id: "default",
+            vapidPublicKey: vapidKeys.publicKey,
+            vapidPrivateKey: vapidKeys.privateKey
+          });
+      }
     }
   } catch (err) {
     console.error("Failed to load VAPID keys from Supabase, falling back to local generate:", err.message);
@@ -146,6 +188,7 @@ async function initVapid() {
 
 async function readSubscriptions() {
   try {
+    checkSupabaseConfig();
     const { data, error } = await supabase
       .from("subscriptions")
       .select("*");
@@ -162,6 +205,7 @@ async function readSubscriptions() {
 
 async function removeSubscription(endpoint) {
   try {
+    checkSupabaseConfig();
     const { error } = await supabase
       .from("subscriptions")
       .delete()
@@ -174,6 +218,7 @@ async function removeSubscription(endpoint) {
 
 async function checkUpcomingMeetings() {
   try {
+    checkSupabaseConfig();
     const now = new Date();
     
     const { data: clients, error } = await supabase
@@ -306,6 +351,7 @@ function badRequest(res, message) {
 
 async function readClients() {
   try {
+    checkSupabaseConfig();
     const { data, error } = await supabase
       .from("clients")
       .select("*")
@@ -380,6 +426,15 @@ function cleanClientInput(input, isCreate = false) {
 }
 
 async function handleApi(req, res, url) {
+  if (req.method === "GET" && url.pathname === "/api/status") {
+    return sendJson(res, 200, {
+      supabaseConfigured: !!(supabaseUrl && supabaseKey && isUrlValid),
+      supabaseUrlValid: !!isUrlValid,
+      supabaseUrl: supabaseUrl || null,
+      error: !isUrlValid && supabaseUrl ? "SUPABASE_URL must be a valid URL starting with http:// or https://. Found a key/token instead: " + supabaseUrl : null
+    });
+  }
+
   if (req.method === "GET" && url.pathname === "/api/vapid-public-key") {
     return sendJson(res, 200, { publicKey: vapidKeys.publicKey });
   }
@@ -425,6 +480,7 @@ async function handleApi(req, res, url) {
     }
     
     try {
+      checkSupabaseConfig();
       const { error } = await supabase
         .from("subscriptions")
         .upsert({
@@ -501,6 +557,7 @@ async function handleApi(req, res, url) {
     const client = cleanClientInput(body, true);
     
     try {
+      checkSupabaseConfig();
       const { data, error } = await supabase
         .from("clients")
         .insert([client])
@@ -526,6 +583,7 @@ async function handleApi(req, res, url) {
 
     if (req.method === "GET") {
       try {
+        checkSupabaseConfig();
         const { data, error } = await supabase
           .from("clients")
           .select("*")
@@ -550,6 +608,7 @@ async function handleApi(req, res, url) {
       const cleaned = cleanClientInput(body);
       
       try {
+        checkSupabaseConfig();
         const { data, error } = await supabase
           .from("clients")
           .update(cleaned)
