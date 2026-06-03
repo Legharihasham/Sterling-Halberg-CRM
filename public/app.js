@@ -41,6 +41,7 @@ const els = {
   saveStatus: document.querySelector("#saveStatus"),
   newClientButton: document.querySelector("#newClientButton"),
   advanceStageButton: document.querySelector("#advanceStageButton"),
+  deleteClientButton: document.querySelector("#deleteClientButton"),
   profilePriority: document.querySelector("#profilePriority"),
   profileMonthly: document.querySelector("#profileMonthly"),
   profileTotal: document.querySelector("#profileTotal"),
@@ -880,6 +881,45 @@ els.advanceStageButton.addEventListener("click", async () => {
     els.saveStatus.textContent = error.message;
   }
 });
+
+// Delete Client Button
+if (els.deleteClientButton) {
+  els.deleteClientButton.addEventListener("click", async () => {
+    const client = state.clients.find((item) => item.id === state.selectedId);
+    if (!client) return;
+    if (confirm(`Are you sure you want to permanently delete lead "${client.name}"? This action cannot be undone.`)) {
+      els.saveStatus.textContent = "Deleting...";
+      try {
+        const response = await fetch(`/api/clients/${client.id}`, {
+          method: "DELETE"
+        });
+        if (!response.ok) {
+          let errMsg = "Unable to delete client";
+          try {
+            const errData = await response.json();
+            if (errData && errData.error) {
+              errMsg = errData.error;
+            }
+          } catch (_) {}
+          throw new Error(errMsg);
+        }
+        
+        els.saveStatus.textContent = "Client deleted";
+        
+        // Remove from local state
+        state.clients = state.clients.filter(c => c.id !== client.id);
+        state.selectedId = state.clients[0]?.id || null;
+        
+        // Redirect to pipeline
+        window.location.hash = "#pipeline";
+        render();
+      } catch (error) {
+        els.saveStatus.textContent = error.message;
+        alert(`Failed to delete client: ${error.message}`);
+      }
+    }
+  });
+}
 
 // New Lead click action
 els.newClientButton.addEventListener("click", async () => {

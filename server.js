@@ -655,6 +655,23 @@ async function handleApi(req, res, url) {
         return sendJson(res, 500, { error: err.message });
       }
     }
+
+    if (req.method === "DELETE") {
+      try {
+        checkSupabaseConfig();
+        const { error } = await supabase
+          .from("clients")
+          .delete()
+          .eq("id", clientId);
+        if (error) throw error;
+        
+        broadcastUpdate();
+        return sendJson(res, 200, { success: true });
+      } catch (err) {
+        console.error("Failed to delete client:", err.message);
+        return sendJson(res, 500, { error: err.message });
+      }
+    }
   }
 
   sendJson(res, 404, { error: "API route not found" });
