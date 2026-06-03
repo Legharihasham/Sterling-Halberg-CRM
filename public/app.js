@@ -207,11 +207,9 @@ function renderMetrics() {
   const closed = clientsSource.filter((client) => client.stage === "client_closed");
   
   const pipelineTotal = clientsSource
-    .filter((client) => client.stage !== "client_closed")
     .reduce((sum, client) => sum + totalValue(client), 0);
 
   const pipelineWeighted = clientsSource
-    .filter((client) => client.stage !== "client_closed")
     .reduce((sum, client) => sum + weightedValue(client), 0);
 
   const closedMonthly = clientsSource
