@@ -421,6 +421,15 @@ function cleanClientInput(input, isCreate = false) {
       .filter(Boolean);
   }
 
+  for (const dateField of ["nextMeeting", "meetingDoneDate"]) {
+    if (dateField in cleaned) {
+      const val = cleaned[dateField];
+      if (val === "" || val === null || val === undefined) {
+        cleaned[dateField] = null;
+      }
+    }
+  }
+
   cleaned.updatedAt = new Date().toISOString();
   return cleaned;
 }
