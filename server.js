@@ -408,10 +408,18 @@ function cleanClientInput(input, isCreate = false) {
     cleaned.tasks = Array.isArray(cleaned.tasks) ? cleaned.tasks : [];
   }
 
-  for (const numberField of ["monthlyValue", "setupFee", "contractMonths", "probability"]) {
-    if (numberField in cleaned) {
-      cleaned[numberField] = Number(cleaned[numberField] || 0);
-    }
+  if ("monthlyValue" in cleaned) {
+    cleaned.monthlyValue = Math.max(0, Number(cleaned.monthlyValue) || 0);
+  }
+  if ("setupFee" in cleaned) {
+    cleaned.setupFee = Math.max(0, Number(cleaned.setupFee) || 0);
+  }
+  if ("contractMonths" in cleaned) {
+    cleaned.contractMonths = Math.max(1, Number(cleaned.contractMonths) || 1);
+  }
+  if ("probability" in cleaned) {
+    const val = Number(cleaned.probability);
+    cleaned.probability = Number.isNaN(val) ? 25 : Math.min(100, Math.max(0, val));
   }
 
   if ("tasks" in cleaned && !Array.isArray(cleaned.tasks)) {

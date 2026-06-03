@@ -34,7 +34,9 @@ const els = {
   metricDone: document.querySelector("#metricDone"),
   metricClosed: document.querySelector("#metricClosed"),
   metricClosedValue: document.querySelector("#metricClosedValue"),
+  metricClosedTcv: document.querySelector("#metricClosedTcv"),
   metricPipeline: document.querySelector("#metricPipeline"),
+  metricPipelineWeighted: document.querySelector("#metricPipelineWeighted"),
   nextMeetingText: document.querySelector("#nextMeetingText"),
   profileEmpty: document.querySelector("#profileEmpty"),
   profileForm: document.querySelector("#profileForm"),
@@ -152,11 +154,18 @@ function fromPakistanInputDateTime(value) {
 }
 
 function totalValue(client) {
-  return Number(client.setupFee || 0) + Number(client.monthlyValue || 0) * Number(client.contractMonths || 0);
+  if (!client) return 0;
+  const setup = Number(client.setupFee) || 0;
+  const monthly = Number(client.monthlyValue) || 0;
+  const months = Math.max(1, Number(client.contractMonths) || 1);
+  return setup + (monthly * months);
 }
 
 function weightedValue(client) {
-  return totalValue(client) * (Number(client.probability || 0) / 100);
+  if (!client) return 0;
+  const tcv = totalValue(client);
+  const prob = Math.min(100, Math.max(0, Number(client.probability) >= 0 ? Number(client.probability) : 25));
+  return tcv * (prob / 100);
 }
 
 function probabilityForStage(stageId, currentProbability = 25) {
@@ -196,7 +205,12 @@ function renderMetrics() {
     .sort((a, b) => parseToDate(a.nextMeeting) - parseToDate(b.nextMeeting));
   const done = clientsSource.filter((client) => client.stage === "meeting_done" || client.meetingDoneDate);
   const closed = clientsSource.filter((client) => client.stage === "client_closed");
-  const pipeline = clientsSource
+  
+  const pipelineTotal = clientsSource
+    .filter((client) => client.stage !== "client_closed")
+    .reduce((sum, client) => sum + totalValue(client), 0);
+
+  const pipelineWeighted = clientsSource
     .filter((client) => client.stage !== "client_closed")
     .reduce((sum, client) => sum + weightedValue(client), 0);
 
@@ -204,11 +218,17 @@ function renderMetrics() {
     .filter((client) => client.stage === "client_closed")
     .reduce((sum, client) => sum + Number(client.monthlyValue || 0), 0);
 
+  const closedTcv = clientsSource
+    .filter((client) => client.stage === "client_closed")
+    .reduce((sum, client) => sum + totalValue(client), 0);
+
   if (els.metricUpcoming) els.metricUpcoming.textContent = upcoming.length;
   if (els.metricDone) els.metricDone.textContent = done.length;
   if (els.metricClosed) els.metricClosed.textContent = closed.length;
   if (els.metricClosedValue) els.metricClosedValue.textContent = money.format(closedMonthly);
-  if (els.metricPipeline) els.metricPipeline.textContent = money.format(pipeline);
+  if (els.metricClosedTcv) els.metricClosedTcv.textContent = `Total TCV: ${money.format(closedTcv)}`;
+  if (els.metricPipeline) els.metricPipeline.textContent = money.format(pipelineTotal);
+  if (els.metricPipelineWeighted) els.metricPipelineWeighted.textContent = `Weighted: ${money.format(pipelineWeighted)}`;
   if (els.nextMeetingText) {
     els.nextMeetingText.textContent = upcoming[0]
       ? `${upcoming[0].name} on ${formatDate(upcoming[0].nextMeeting)}`
@@ -1170,7 +1190,7 @@ function initFinancialsListeners() {
   const updateProfileFinancialsReadout = () => {
     const monthly = Number(fields.monthlyValue.value || 0);
     const setup = Number(fields.setupFee.value || 0);
-    const months = Number(fields.contractMonths.value || 1);
+    const months = Math.max(1, Number(fields.contractMonths.value) || 1);
     const total = setup + monthly * months;
     if (els.profileTotal) els.profileTotal.textContent = money.format(total);
     if (els.profileMonthly) els.profileMonthly.textContent = money.format(monthly);
