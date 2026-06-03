@@ -328,7 +328,7 @@ function renderMeetingsView() {
       const id = e.currentTarget.dataset.id;
       if (confirm(`Are you sure you want to cancel the meeting with ${client.name}?`)) {
         try {
-          await saveClient(id, { nextMeeting: "" });
+          await saveClient(id, { nextMeeting: null });
           render();
           renderMeetingsView();
         } catch (err) {
@@ -649,7 +649,7 @@ function collectProfilePayload() {
     setupFee: Number(fields.setupFee.value || 0),
     contractMonths: Number(fields.contractMonths.value || 1),
     probability: Number(fields.probability.value || 0),
-    nextMeeting: fields.nextMeeting.value ? fromPakistanInputDateTime(fields.nextMeeting.value) : "",
+    nextMeeting: fields.nextMeeting.value ? fromPakistanInputDateTime(fields.nextMeeting.value) : null,
     notes: fields.notes.value.trim(),
     tasks: fields.tasks.value
       .split("\n")
