@@ -35,6 +35,121 @@ try {
   console.warn("Could not load local .env file:", err.message);
 }
 
+// Guarantee secure authentication credentials are initialized in .env
+function ensureAuthEnv() {
+  const envPath = path.join(ROOT, ".env");
+  let envContent = "";
+  try {
+    if (fsSync.existsSync(envPath)) {
+      envContent = fsSync.readFileSync(envPath, "utf8");
+    }
+  } catch (err) {
+    console.error("Could not read .env for auth verification:", err);
+  }
+
+  const needsUsername = !envContent.includes("CRM_USERNAME=");
+  const needsPasswordHash = !envContent.includes("CRM_PASSWORD_HASH=");
+  const needsSessionSecret = !envContent.includes("SESSION_SECRET=");
+
+  if (needsUsername || needsPasswordHash || needsSessionSecret) {
+    const lines = [];
+    if (needsUsername) {
+      lines.push('CRM_USERNAME="admin"');
+      process.env.CRM_USERNAME = "admin";
+    }
+    if (needsPasswordHash) {
+      const defaultPassword = "sterlingcrm123";
+      const salt = crypto.randomBytes(16).toString("hex");
+      const hash = crypto.scryptSync(defaultPassword, salt, 64).toString("hex");
+      const hashVal = `scrypt$${salt}$${hash}`;
+      lines.push(`CRM_PASSWORD_HASH="${hashVal}"`);
+      process.env.CRM_PASSWORD_HASH = hashVal;
+      console.log("--------------------------------------------------");
+      console.log("DEFAULT LOGIN CREDENTIALS CREATED:");
+      console.log("Username: admin");
+      console.log("Password: sterlingcrm123");
+      console.log("Password is stored securely in .env using scrypt.");
+      console.log("--------------------------------------------------");
+    }
+    if (needsSessionSecret) {
+      const secret = crypto.randomBytes(32).toString("hex");
+      lines.push(`SESSION_SECRET="${secret}"`);
+      process.env.SESSION_SECRET = secret;
+    }
+
+    try {
+      const separator = envContent && !envContent.endsWith("\n") ? "\n" : "";
+      fsSync.appendFileSync(envPath, separator + lines.join("\n") + "\n", "utf8");
+    } catch (err) {
+      console.error("Could not write authentication defaults to .env:", err.message);
+    }
+  }
+}
+ensureAuthEnv();
+
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex");
+
+function parseCookies(cookieHeader) {
+  const cookies = {};
+  if (!cookieHeader) return cookies;
+  cookieHeader.split(";").forEach((cookie) => {
+    const parts = cookie.split("=");
+    if (parts.length === 2) {
+      cookies[parts[0].trim()] = parts[1].trim();
+    }
+  });
+  return cookies;
+}
+
+function signToken(payload) {
+  const data = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const signature = crypto.createHmac("sha256", SESSION_SECRET).update(data).digest("base64url");
+  return `${data}.${signature}`;
+}
+
+function verifyToken(token) {
+  if (!token) return null;
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const [data, signature] = parts;
+  const expectedSignature = crypto.createHmac("sha256", SESSION_SECRET).update(data).digest("base64url");
+  
+  const sigBuffer = Buffer.from(signature);
+  const expBuffer = Buffer.from(expectedSignature);
+  if (sigBuffer.length !== expBuffer.length || !crypto.timingSafeEqual(sigBuffer, expBuffer)) {
+    return null;
+  }
+  
+  try {
+    const payload = JSON.parse(Buffer.from(data, "base64url").toString("utf8"));
+    if (payload.expires && payload.expires < Date.now()) {
+      return null;
+    }
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
+function verifyPassword(password, storedHash) {
+  if (!storedHash) return false;
+  if (!storedHash.startsWith("scrypt$")) {
+    return password === storedHash;
+  }
+  const parts = storedHash.split("$");
+  if (parts.length !== 3) return false;
+  const [, salt, hash] = parts;
+  const verifyHash = crypto.scryptSync(password, salt, 64).toString("hex");
+  const hashBuffer = Buffer.from(hash, "hex");
+  const verifyBuffer = Buffer.from(verifyHash, "hex");
+  
+  if (hashBuffer.length !== verifyBuffer.length || !crypto.timingSafeEqual(hashBuffer, verifyBuffer)) {
+    return false;
+  }
+  return true;
+}
+
+
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const isUrlValid = supabaseUrl && (supabaseUrl.startsWith("http://") || supabaseUrl.startsWith("https://"));
@@ -459,6 +574,51 @@ function cleanClientInput(input, isCreate = false) {
 }
 
 async function handleApi(req, res, url) {
+  if (req.method === "POST" && url.pathname === "/api/login") {
+    try {
+      const { username, password } = await readBody(req);
+      const expectedUsername = process.env.CRM_USERNAME || "admin";
+      const expectedHash = process.env.CRM_PASSWORD_HASH;
+
+      if (!username || !password) {
+        return sendJson(res, 400, { error: "Username and password are required" });
+      }
+
+      const userBuffer = Buffer.from(username);
+      const expectedUserBuffer = Buffer.from(expectedUsername);
+      let isUsernameValid = false;
+      if (userBuffer.length === expectedUserBuffer.length) {
+        isUsernameValid = crypto.timingSafeEqual(userBuffer, expectedUserBuffer);
+      }
+
+      const isPasswordValid = verifyPassword(password, expectedHash);
+
+      if (isUsernameValid && isPasswordValid) {
+        const expires = Date.now() + 8 * 60 * 60 * 1000; // 8 hours
+        const token = signToken({ username, expires });
+
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          "Set-Cookie": `crm_session=${token}; HttpOnly; Path=/; SameSite=Strict; Max-Age=28800`
+        });
+        return res.end(JSON.stringify({ success: true }));
+      } else {
+        return sendJson(res, 401, { error: "Invalid username or password" });
+      }
+    } catch (err) {
+      console.error("Login API error:", err);
+      return sendJson(res, 500, { error: "Internal server error" });
+    }
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/logout") {
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+      "Set-Cookie": "crm_session=; HttpOnly; Path=/; SameSite=Strict; Max-Age=0"
+    });
+    return res.end(JSON.stringify({ success: true }));
+  }
+
   if (req.method === "GET" && url.pathname === "/api/status") {
     // Check meetings asynchronously in background on user visit
     checkUpcomingMeetings().catch(err => console.error("Background cron error:", err));
