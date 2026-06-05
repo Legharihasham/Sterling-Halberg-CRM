@@ -1530,3 +1530,19 @@ initSearchSuggestions();
 initPushNotifications();
 initWaSettings();
 initRealtime();
+
+// Sign Out handler
+const btnSignOut = document.querySelector("#btnSignOut");
+if (btnSignOut) {
+  btnSignOut.addEventListener("click", async () => {
+    if (confirm("Are you sure you want to sign out?")) {
+      try {
+        await fetch("/api/logout", { method: "POST" });
+        window.location.href = "/login.html";
+      } catch (err) {
+        console.error("Logout failed:", err);
+        window.location.href = "/login.html";
+      }
+    }
+  });
+}
