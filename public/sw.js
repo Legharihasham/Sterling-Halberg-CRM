@@ -11,8 +11,8 @@ self.addEventListener("push", (event) => {
   const title = data.title || "Upcoming Meeting Reminder";
   const options = {
     body: data.body || "You have a meeting scheduled soon.",
-    icon: data.icon || "https://lh3.googleusercontent.com/aida-public/AB6AXuBtcK341GBxE3BwuS6tG8G3WQFf2xPNalr8BIgN6xBSdHwGiwk3CmBHtxdJJAHp_HGsJzPCH85TkWtC1CQL1j6-4MCgkGZIzskcYiP8tsAd7ByAL5mLSbQkZDRCKCP0HTiNFFK9MTeteqK-4BY_Gj3Cr26yRoYcBXl9iVaKFwYBDJKcEJjG4e8aI3VrS11xJan13zOCd4Q4J2Ml9Jle1Az5AjKt8iNgVs1hfhdeR9DqQGXJqk0L5qDX_-hzA_PGIKBjG4lt0PDLTelh",
-    badge: data.badge || "https://lh3.googleusercontent.com/aida-public/AB6AXuBtcK341GBxE3BwuS6tG8G3WQFf2xPNalr8BIgN6xBSdHwGiwk3CmBHtxdJJAHp_HGsJzPCH85TkWtC1CQL1j6-4MCgkGZIzskcYiP8tsAd7ByAL5mLSbQkZDRCKCP0HTiNFFK9MTeteqK-4BY_Gj3Cr26yRoYcBXl9iVaKFwYBDJKcEJjG4e8aI3VrS11xJan13zOCd4Q4J2Ml9Jle1Az5AjKt8iNgVs1hfhdeR9DqQGXJqk0L5qDX_-hzA_PGIKBjG4lt0PDLTelh",
+    icon: data.icon || "/logo.jpg",
+    badge: data.badge || "/favicon.jpg",
     data: data.data || {},
     vibrate: [200, 100, 200],
     tag: data.tag || "meeting-reminder",
