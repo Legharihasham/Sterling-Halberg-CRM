@@ -289,6 +289,22 @@ async function checkUpcomingMeetings() {
             clientId: client.id,
             nextMeeting: client.nextMeeting
           });
+      } else if (diffMins <= -10) {
+        console.log(`Meeting with ${client.name} has passed buffer time. Marking as done.`);
+        const { error: updateError } = await supabase
+          .from("clients")
+          .update({
+            stage: "meeting_done",
+            nextMeeting: null,
+            meetingDoneDate: now.toISOString()
+          })
+          .eq("id", client.id);
+          
+        if (updateError) {
+          console.error("Error auto-marking meeting as done:", updateError.message);
+        } else {
+          broadcastUpdate();
+        }
       }
     }
   } catch (err) {
