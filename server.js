@@ -886,6 +886,46 @@ async function handleStatic(req, res, url) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
+    
+    // Cookie-based Session Authentication Check
+    const cookies = parseCookies(req.headers.cookie);
+    const sessionToken = cookies.crm_session;
+    const session = verifyToken(sessionToken);
+    const isAuthenticated = !!session;
+    
+    // Allow login endpoint always
+    if (url.pathname === "/api/login") {
+      return await handleApi(req, res, url);
+    }
+    
+    // Public paths allowed without authentication
+    const PUBLIC_UNAUTH_PATHS = new Set([
+      "/login.html",
+      "/favicon.ico",
+      "/manifest.json",
+      "/sw.js",
+      "/api/cron/check-meetings" // Exempt cron endpoint from authentication so trigger runs automatically
+    ]);
+    
+    if (!isAuthenticated) {
+      // If requesting API, return 401
+      if (url.pathname.startsWith("/api/")) {
+        return sendJson(res, 401, { error: "Unauthorized" });
+      }
+      
+      // If requesting a non-public file, redirect to /login.html
+      if (!PUBLIC_UNAUTH_PATHS.has(url.pathname)) {
+        res.writeHead(302, { "Location": "/login.html" });
+        return res.end();
+      }
+    } else {
+      // If authenticated and trying to access login.html, redirect to /
+      if (url.pathname === "/login.html") {
+        res.writeHead(302, { "Location": "/" });
+        return res.end();
+      }
+    }
+    
     if (url.pathname.startsWith("/api/")) {
       return await handleApi(req, res, url);
     }
