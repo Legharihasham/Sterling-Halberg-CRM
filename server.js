@@ -8,6 +8,7 @@ const { createClient } = require("@supabase/supabase-js");
 const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, "public");
+const PRIVATE_DIR = path.join(ROOT, "private");
 const DATA_FILE = path.join(ROOT, "data", "clients.json");
 
 const sseClients = new Set();
@@ -28,7 +29,10 @@ try {
       if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
         val = val.slice(1, -1);
       }
-      process.env[key] = val;
+      // Only set from .env if not already defined in environment (e.g. Vercel project settings)
+      if (process.env[key] === undefined) {
+        process.env[key] = val;
+      }
     });
   }
 } catch (err) {
@@ -37,6 +41,11 @@ try {
 
 // Guarantee secure authentication credentials are initialized in .env
 function ensureAuthEnv() {
+  // If we already have the variables in process.env (e.g. on Vercel), do nothing
+  if (process.env.CRM_USERNAME && process.env.CRM_PASSWORD_HASH && process.env.SESSION_SECRET) {
+    return;
+  }
+
   const envPath = path.join(ROOT, ".env");
   let envContent = "";
   try {
@@ -47,17 +56,17 @@ function ensureAuthEnv() {
     console.error("Could not read .env for auth verification:", err);
   }
 
-  const needsUsername = !envContent.includes("CRM_USERNAME=");
-  const needsPasswordHash = !envContent.includes("CRM_PASSWORD_HASH=");
-  const needsSessionSecret = !envContent.includes("SESSION_SECRET=");
+  const hasUsername = !!process.env.CRM_USERNAME || envContent.includes("CRM_USERNAME=");
+  const hasPasswordHash = !!process.env.CRM_PASSWORD_HASH || envContent.includes("CRM_PASSWORD_HASH=");
+  const hasSessionSecret = !!process.env.SESSION_SECRET || envContent.includes("SESSION_SECRET=");
 
-  if (needsUsername || needsPasswordHash || needsSessionSecret) {
+  if (!hasUsername || !hasPasswordHash || !hasSessionSecret) {
     const lines = [];
-    if (needsUsername) {
+    if (!hasUsername) {
       lines.push('CRM_USERNAME="admin"');
       process.env.CRM_USERNAME = "admin";
     }
-    if (needsPasswordHash) {
+    if (!hasPasswordHash) {
       const defaultPassword = "sterlingcrm123";
       const salt = crypto.randomBytes(16).toString("hex");
       const hash = crypto.scryptSync(defaultPassword, salt, 64).toString("hex");
@@ -71,7 +80,7 @@ function ensureAuthEnv() {
       console.log("Password is stored securely in .env using scrypt.");
       console.log("--------------------------------------------------");
     }
-    if (needsSessionSecret) {
+    if (!hasSessionSecret) {
       const secret = crypto.randomBytes(32).toString("hex");
       lines.push(`SESSION_SECRET="${secret}"`);
       process.env.SESSION_SECRET = secret;
@@ -512,10 +521,10 @@ async function readBody(req) {
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
-function publicPathFor(urlPath) {
+function publicPathFor(urlPath, baseDir = PUBLIC_DIR) {
   const safePath = urlPath === "/" ? "/index.html" : urlPath;
-  const resolved = path.normalize(path.join(PUBLIC_DIR, safePath));
-  if (!resolved.startsWith(PUBLIC_DIR)) return null;
+  const resolved = path.normalize(path.join(baseDir, safePath));
+  if (!resolved.startsWith(baseDir)) return null;
   return resolved;
 }
 
@@ -861,8 +870,24 @@ async function handleApi(req, res, url) {
   sendJson(res, 404, { error: "API route not found" });
 }
 
-async function handleStatic(req, res, url) {
-  const filePath = publicPathFor(url.pathname);
+async function handleStatic(req, res, url, isAuthenticated) {
+  const PUBLIC_UNAUTH_PATHS = new Set([
+    "/login.html",
+    "/favicon.ico",
+    "/manifest.json",
+    "/sw.js",
+    "/api/cron/check-meetings"
+  ]);
+
+  const isPublicFile = PUBLIC_UNAUTH_PATHS.has(url.pathname);
+  
+  if (!isPublicFile && !isAuthenticated) {
+    res.writeHead(403);
+    return res.end("Forbidden");
+  }
+
+  const baseDir = isPublicFile ? PUBLIC_DIR : PRIVATE_DIR;
+  const filePath = publicPathFor(url.pathname, baseDir);
   if (!filePath) {
     res.writeHead(403);
     return res.end("Forbidden");
@@ -875,9 +900,25 @@ async function handleStatic(req, res, url) {
     res.end(content);
   } catch (error) {
     if (error.code === "ENOENT") {
-      const fallback = await fs.readFile(path.join(PUBLIC_DIR, "index.html"));
-      res.writeHead(200, { "Content-Type": contentTypes[".html"] });
-      return res.end(fallback);
+      if (isAuthenticated) {
+        try {
+          const fallback = await fs.readFile(path.join(PRIVATE_DIR, "index.html"));
+          res.writeHead(200, { "Content-Type": contentTypes[".html"] });
+          return res.end(fallback);
+        } catch (fallbackErr) {
+          res.writeHead(404);
+          return res.end("Not Found");
+        }
+      } else {
+        try {
+          const fallback = await fs.readFile(path.join(PUBLIC_DIR, "login.html"));
+          res.writeHead(200, { "Content-Type": contentTypes[".html"] });
+          return res.end(fallback);
+        } catch (fallbackErr) {
+          res.writeHead(404);
+          return res.end("Not Found");
+        }
+      }
     }
     throw error;
   }
@@ -929,7 +970,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname.startsWith("/api/")) {
       return await handleApi(req, res, url);
     }
-    return await handleStatic(req, res, url);
+    return await handleStatic(req, res, url, isAuthenticated);
   } catch (error) {
     if (error instanceof SyntaxError) return badRequest(res, "Invalid JSON body");
     console.error(error);
